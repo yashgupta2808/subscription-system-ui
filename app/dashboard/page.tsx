@@ -5,19 +5,25 @@ import { useRouter } from "next/navigation";
 import { getSession, signOut } from "@/libs/auth/cognito-auth";
 import { SUBSCRIPTION_PLANS } from "@/libs/utils/constants";
 
+const initialUserState = {
+  username: "",
+  email: "",
+  planId: "",
+  subscribed: false,
+  expired: false,
+  thankYou: false,
+  endDate: "",
+};
+
 export default function Dashboard() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [planId, setPlanId] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
-  const [endDate, setEndDate] = useState("");
+  const [user, setUser] = useState(initialUserState);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
 
   const fetchSubscription = useCallback(async () => {
     try {
-      const response = await fetch(`api/subscribe?email=${email}`, {
+      const response = await fetch(`api/subscribe?email=${user.email}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -25,27 +31,31 @@ export default function Dashboard() {
       });
       if (response.ok) {
         const data = await response.json();
-        if (data.planId) {
-          setPlanId(data.planId);
-          setSubscribed(true);
-          setEndDate(data.endDate);
-        }
+        setUser((userData) => ({
+          ...userData,
+          subscribed: data.status === "ACTIVE",
+          expired: data.status === "EXPIRED",
+          endDate: data.endDate || "",
+        }));
       } else if (response.status === 404) {
-        setSubscribed(false);
+        setUser((userData) => ({ ...userData, subscribed: false }));
       }
     } catch (error) {
       console.error("Error fetching subscription:", error);
     } finally {
       setLoading(false);
     }
-  }, [email]);
+  }, [user.email]);
 
   useEffect(() => {
     const fetchSession = async () => {
       try {
         const session = await getSession();
-        setUsername(session.getIdToken().payload["name"]);
-        setEmail(session.getIdToken().payload["email"]);
+        setUser((userData) => ({
+          ...userData,
+          username: session.getIdToken().payload["name"],
+          email: session.getIdToken().payload["email"],
+        }));
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         setError("An error occurred. Redirecting to sign in...");
@@ -59,7 +69,7 @@ export default function Dashboard() {
   }, [router]);
 
   useEffect(() => {
-    if (email) {
+    if (user.email) {
       fetchSubscription();
     }
 
@@ -67,11 +77,11 @@ export default function Dashboard() {
     window.onpopstate = () => {
       history.go(1);
     };
-  }, [email, fetchSubscription]);
+  }, [user.email, fetchSubscription]);
 
   const handleSignOut = async () => {
     await signOut();
-    router.push("/signin");
+    router.push("/");
   };
 
   const handleSubmit = async (e) => {
@@ -82,10 +92,11 @@ export default function Dashboard() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, planId }),
+        body: JSON.stringify({ email: user.email, planId: user.planId }),
       });
       if (response.ok) {
         alert("Subscribed successfully!");
+        setUser((prevUser) => ({ ...prevUser, thankYou: true }));
         fetchSubscription();
       } else {
         const data = await response.json();
@@ -116,35 +127,47 @@ export default function Dashboard() {
   return (
     <>
       <header className="header">
-        <h1>Subscription Billing System</h1>
+        <h1>Subscription System</h1>
       </header>
       <div className="content">
-        <h1>Welcome {username}!</h1>
-        {subscribed ? (
+        <h1>Welcome {user.username}!</h1>
+        {user.thankYou && <h2>Thank you for subscribing!</h2>}
+        {user.subscribed ? (
           <div>
-            <h2>Your subscription is active until {endDate}</h2>
+            <h2>Your subscription is active until {user.endDate}.</h2>
           </div>
         ) : (
           <div>
-            <h3>Get a Subscription</h3>
+            {user.expired ? (
+              <div>
+                <h2>Your subscription has expired. Please subscribe again.</h2>
+              </div>
+            ) : (
+              <h3>Get a Subscription</h3>
+            )}
             <form onSubmit={handleSubmit}>
-                  <label>
-                  Choose Your Plan:
-                  <select
-                    value={planId}
-                    onChange={(e) => setPlanId(e.target.value)}
-                    required
-                  >
-                    <option value="" disabled>
+              <label>
+                Choose Your Plan:
+                <select
+                  value={user.planId}
+                  onChange={(e) =>
+                    setUser((prevUser) => ({
+                      ...prevUser,
+                      planId: e.target.value,
+                    }))
+                  }
+                  required
+                >
+                  <option value="" disabled>
                     Select a plan
-                    </option>
-                    {SUBSCRIPTION_PLANS.map((plan) => (
+                  </option>
+                  {SUBSCRIPTION_PLANS.map((plan) => (
                     <option key={plan.value} value={plan.value}>
                       {plan.label}
                     </option>
-                    ))}
-                  </select>
-                  </label>
+                  ))}
+                </select>
+              </label>
               <button type="submit">Subscribe</button>
             </form>
           </div>

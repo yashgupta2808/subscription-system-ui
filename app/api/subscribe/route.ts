@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 
 const API_GATEWAY_URL =
-  "https://txab1ojjge.execute-api.us-east-1.amazonaws.com/prod/subscribe";
+  " https://5nqkkeuvld.execute-api.us-east-1.amazonaws.com/prod/subscribe";
 
 interface SubscriptionData {
   email: string;
@@ -12,7 +12,7 @@ interface SubscriptionData {
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const requestData: SubscriptionData = await request.json();
-    const result = await axios.post(API_GATEWAY_URL, requestData, {
+    const result = await axios.post(API_GATEWAY_URL + '/cancel', requestData, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -47,6 +47,34 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       headers: {
         "Content-Type": "application/json",
       },
+    });
+    return NextResponse.json(result.data, {
+      status: result.status,
+    });
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return NextResponse.json(
+        error.response?.data || { message: "An error occurred" },
+        {
+          status: error.response?.status || 500,
+        }
+      );
+    }
+    return NextResponse.json(
+      { message: (error as Error).message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest): Promise<NextResponse> {
+  try {
+    const userEmail: string = await request.json();
+    const result = await axios.delete(API_GATEWAY_URL, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: userEmail,
     });
     return NextResponse.json(result.data, {
       status: result.status,

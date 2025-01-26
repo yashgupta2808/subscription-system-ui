@@ -7,8 +7,8 @@ import {
 } from "amazon-cognito-identity-js";
 
 const poolData = {
-  UserPoolId: "us-east-1_Fq73iSmCi",
-  ClientId: "7afa4m4cgknb7fna5l2mdro183",
+  UserPoolId: "us-east-1_dWZYQ8mrS",
+  ClientId: "6oi3ub6ahk06fa6m628ib2ocd7",
 };
 
 const userPool = new CognitoUserPool(poolData);
@@ -26,13 +26,12 @@ export const signUp = (email: string, password: string, name: string) => {
   ];
 
   return new Promise((resolve, reject) => {
-    userPool.signUp(email, password, attributeList, [], (err, result) => {
-      if (err) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((err as any).code === "UsernameExistsException") {
+    userPool.signUp(email, password, attributeList, [], (error, result) => {
+      if (error) {
+        if (error.name === "UsernameExistsException") {
           reject("User already exists");
         }
-        reject(err);
+        reject(error);
       }
       resolve(result);
     });

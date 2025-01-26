@@ -22,7 +22,7 @@ body {
   align-items: center;
   height: 100vh;
   flex-direction: column;
-  overflow: hidden; /* Prevent scrolling */
+  overflow: hidden;
 }
 
 .container {
@@ -34,6 +34,7 @@ body {
   border-radius: var(--border-radius);
   background-color: var(--secondary-color);
   margin: 20px;
+  width: 500px;
 }
 
 .error {
