@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
+import { NextRequest, NextResponse } from "next/server";
 
 const API_GATEWAY_URL =
   " https://5nqkkeuvld.execute-api.us-east-1.amazonaws.com/prod/subscribe";
@@ -12,7 +12,7 @@ interface SubscriptionData {
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const requestData: SubscriptionData = await request.json();
-    const result = await axios.post(API_GATEWAY_URL + '/cancel', requestData, {
+    const result = await axios.post(API_GATEWAY_URL, requestData, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -39,9 +39,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(request.url);
-    const email = searchParams.get("email");
+    const email = decodeURIComponent(searchParams.get("email") as string);
     if (!email) {
-      return NextResponse.json({ message: "Email is required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Email is required" },
+        { status: 400 }
+      );
     }
     const result = await axios.get(`${API_GATEWAY_URL}?email=${email}`, {
       headers: {
@@ -69,12 +72,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
   try {
-    const userEmail: string = await request.json();
-    const result = await axios.delete(API_GATEWAY_URL, {
+    const data = await request.json();
+    const result = await axios.post(API_GATEWAY_URL + "/cancel", data, {
       headers: {
         "Content-Type": "application/json",
       },
-      data: userEmail,
     });
     return NextResponse.json(result.data, {
       status: result.status,

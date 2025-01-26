@@ -1,11 +1,13 @@
 ## About the Project
 
-This project is a subscription system built using Next.js. It provides a user interface for managing subscriptions. The system is designed to be scalable and easy to use, with a modern and responsive design.
+This project is a subscription system built using Next.js. It provides a user interface for managing subscriptions.
 
 ## How It Works
 
 The subscription system allows users to:
-- Create and manage subscriptions
+- Get a new subscription
+- Cancel the existing subscription
+- Renew the expired subscription
 
 The system uses Next.js for the frontend, providing a fast and responsive user experience.
 

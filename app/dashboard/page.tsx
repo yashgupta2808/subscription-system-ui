@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { getSession, signOut } from "@/libs/auth/cognito-auth";
 import { SUBSCRIPTION_PLANS } from "@/libs/utils/constants";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 const initialUserState = {
   username: "",
@@ -11,7 +12,6 @@ const initialUserState = {
   planId: "",
   subscribed: false,
   expired: false,
-  thankYou: false,
   endDate: "",
 };
 
@@ -22,13 +22,17 @@ export default function Dashboard() {
   const router = useRouter();
 
   const fetchSubscription = useCallback(async () => {
+    setLoading(true);
     try {
-      const response = await fetch(`api/subscribe?email=${user.email}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `api/subscribe?email=${encodeURIComponent(user.email)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       if (response.ok) {
         const data = await response.json();
         setUser((userData) => ({
@@ -39,34 +43,42 @@ export default function Dashboard() {
         }));
       } else if (response.status === 404) {
         setUser((userData) => ({ ...userData, subscribed: false }));
+      } else {
+        setLoading(false);
+        throw new Error("An error occurred while fetching subscription.");
       }
     } catch (error) {
-      console.error("Error fetching subscription:", error);
+      setError("Something went wrong. Try Signing in again!");
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      router.push("/");
+    } finally {
+      setLoading(false);
+      setError("");
+    }
+  }, [router, user.email]);
+
+  const fetchSession = useCallback(async () => {
+    setLoading(true);
+    try {
+      const session = await getSession();
+      setUser((userData) => ({
+        ...userData,
+        username: session.getIdToken().payload["name"],
+        email: session.getIdToken().payload["email"],
+      }));
+    } catch (error) {
+      setError("An error occurred. Try signing in again!");
+      setTimeout(() => {
+        router.push("/signin");
+      }, 3000);
     } finally {
       setLoading(false);
     }
-  }, [user.email]);
+  }, [router]);
 
   useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const session = await getSession();
-        setUser((userData) => ({
-          ...userData,
-          username: session.getIdToken().payload["name"],
-          email: session.getIdToken().payload["email"],
-        }));
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (err) {
-        setError("An error occurred. Redirecting to sign in...");
-        setTimeout(() => {
-          router.push("/signin");
-        }, 3000);
-      }
-    };
-
     fetchSession();
-  }, [router]);
+  }, [fetchSession]);
 
   useEffect(() => {
     if (user.email) {
@@ -86,6 +98,7 @@ export default function Dashboard() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await fetch("/api/subscribe", {
         method: "POST",
@@ -95,16 +108,47 @@ export default function Dashboard() {
         body: JSON.stringify({ email: user.email, planId: user.planId }),
       });
       if (response.ok) {
-        alert("Subscribed successfully!");
-        setUser((prevUser) => ({ ...prevUser, thankYou: true }));
+        alert("Subscription successful!");
         fetchSubscription();
       } else {
         const data = await response.json();
         alert(data.message);
       }
     } catch (error) {
-      console.error("Error subscribing:", error);
-      alert("An error occurred while subscribing.");
+      setError("Something went wrong. Please try again.");
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    } finally {
+      setError("");
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/subscribe", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: user.email }),
+      });
+      if (response.ok) {
+        alert("Subscription cancelled successfully!");
+        setUser((userData) => ({
+          ...userData,
+          planId: "",
+          subscribed: false,
+          expired: false,
+          endDate: "",
+        }));
+      } else {
+        const data = await response.json();
+        alert(data.message);
+      }
+    } catch (error) {
+      alert("An error occurred while cancelling subscription.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -130,8 +174,7 @@ export default function Dashboard() {
         <h1>Subscription System</h1>
       </header>
       <div className="content">
-        <h1>Welcome {user.username}!</h1>
-        {user.thankYou && <h2>Thank you for subscribing!</h2>}
+        <h1>Welcome, {user.username.split(" ")[0]!}</h1>
         {user.subscribed ? (
           <div>
             <h2>Your subscription is active until {user.endDate}.</h2>
@@ -140,7 +183,8 @@ export default function Dashboard() {
           <div>
             {user.expired ? (
               <div>
-                <h2>Your subscription has expired. Please subscribe again.</h2>
+                <h2>Your subscription has expired.</h2>
+                <h2>Renew your subscription now!</h2>
               </div>
             ) : (
               <h3>Get a Subscription</h3>
@@ -151,8 +195,8 @@ export default function Dashboard() {
                 <select
                   value={user.planId}
                   onChange={(e) =>
-                    setUser((prevUser) => ({
-                      ...prevUser,
+                    setUser((userData) => ({
+                      ...userData,
                       planId: e.target.value,
                     }))
                   }
@@ -173,6 +217,11 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+      {user.subscribed && (
+        <button className="cancel-button" onClick={handleCancelSubscription}>
+          Cancel Subscription
+        </button>
+      )}
       <button className="signout-button" onClick={handleSignOut}>
         Sign Out
       </button>

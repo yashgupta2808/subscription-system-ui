@@ -49,8 +49,7 @@ form {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  max-width: 800px;
+  width: 500px;
   padding: var(--padding);
   border: 1px solid #ccc;
   border-radius: var(--border-radius);
@@ -154,16 +153,25 @@ a:hover {
   margin-top: 10px;
 }
 
+.cancel-button {
+  background-color: #3d14d2;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
 .content {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  width: 100%;
-  height: 60vh; /* Reduce height */
+  width: 500px;
+  height: 60vh;
   padding: 10px;
-  overflow: auto; /* Allow scrolling within content */
+  overflow: auto;
 }
 
 .error-container {

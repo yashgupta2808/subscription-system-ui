@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { verifyEmail } from "@/libs/auth/cognito-auth";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
 const VerifyForm = () => {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [verified, setVerified] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -21,6 +22,7 @@ const VerifyForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await verifyEmail(email!, code);
       setError("");
@@ -29,6 +31,8 @@ const VerifyForm = () => {
       router.push("/signin");
     } catch (error) {
       setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,7 +53,9 @@ const VerifyForm = () => {
           placeholder="Verification code"
           required
         />
-        <button type="submit">Verify</button>
+        <button type="submit" disabled={loading || verified}>
+          {verified ? "Verified" : loading ? "Verifying..." : "Verify"}
+        </button>
       </form>
     </div>
   );
