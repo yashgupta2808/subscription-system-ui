@@ -1,8 +1,7 @@
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
-const API_GATEWAY_URL =
-  " https://5nqkkeuvld.execute-api.us-east-1.amazonaws.com/prod/subscribe";
+const API_GATEWAY_URL = process.env.API_GATEWAY_URL as string;
 
 interface SubscriptionData {
   email: string;
