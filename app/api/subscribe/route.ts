@@ -1,7 +1,7 @@
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
-const API_GATEWAY_URL = process.env.API_GATEWAY_URL as string;
+const API_GATEWAY_URL = process.env.NEXT_PUBLIC_API_GATEWAY_URL as string;
 
 interface SubscriptionData {
   email: string;
