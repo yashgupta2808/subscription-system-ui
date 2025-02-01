@@ -2,7 +2,7 @@
 "use client";
 
 import { getSession, signOut } from "@/libs/auth/cognito-auth";
-import { SUBSCRIPTION_PLANS } from "@/libs/utils/constants";
+import { formatDate, SUBSCRIPTION_PLANS } from "@/libs/utils/constants";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -180,7 +180,7 @@ export default function Dashboard() {
           <div>
             <h2>
               Your subscription for {user.planId} plan is active until{" "}
-              {user.endDate}.
+              {formatDate(new Date(user.endDate))}.
             </h2>
           </div>
         ) : (
