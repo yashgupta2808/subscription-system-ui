@@ -40,6 +40,7 @@ export default function Dashboard() {
           subscribed: data.status === "ACTIVE",
           expired: data.status === "EXPIRED",
           endDate: data.endDate || "",
+          planId: data.planId || "",
         }));
       } else if (response.status === 404) {
         setUser((userData) => ({ ...userData, subscribed: false }));
@@ -174,10 +175,13 @@ export default function Dashboard() {
         <h1>Subscription System</h1>
       </header>
       <div className="content">
-        <h1>Welcome, {user.username.split(" ")[0]!}</h1>
+        <h1>Welcome {user.username.split(" ")[0]}!</h1>
         {user.subscribed ? (
           <div>
-            <h2>Your subscription is active until {user.endDate}.</h2>
+            <h2>
+              Your subscription for {user.planId} plan is active until{" "}
+              {user.endDate}.
+            </h2>
           </div>
         ) : (
           <div>
@@ -213,6 +217,8 @@ export default function Dashboard() {
                 </select>
               </label>
               <button type="submit">Subscribe</button>
+              <br />
+              <i>All rates listed are for a one-month subscription.</i>
             </form>
           </div>
         )}

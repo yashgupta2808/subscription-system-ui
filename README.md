@@ -1,15 +1,16 @@
 ## About the Project
 
-This project is a subscription system built using Next.js. It provides a user interface for managing subscriptions.
+This project is a subscription system built using Next.js. It provides a user interface for managing subscriptions. It is deployed on AWS Amplify via console. The backend of this project can be found here: [subscription-system-service](https://github.com/yashgupta2808/subscription-system-service)
 
 ## How It Works
 
 The subscription system allows users to:
-- Get a new subscription
+
+- Sign up and verify their email via invitation code
+- Sign in to their account
+- Get a new subscription for a month
 - Cancel the existing subscription
 - Renew the expired subscription
-
-The system uses Next.js for the frontend, providing a fast and responsive user experience.
 
 ## Getting Started
 

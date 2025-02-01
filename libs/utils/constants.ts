@@ -1,6 +1,5 @@
 export const SUBSCRIPTION_PLANS = [
-    { value: 'basic', label: 'Basic' },
-    { value: 'standard', label: 'Standard' },
-    { value: 'pro', label: 'Pro' },
-    { value: 'premium', label: 'Premium' }
+    { value: 'Basic', label: 'Basic - Rs. 99' },
+    { value: 'Standard', label: 'Standard - Rs. 149' },
+    { value: 'Premium', label: 'Premium - Rs. 299' }
 ];
