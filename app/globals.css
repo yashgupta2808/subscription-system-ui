@@ -155,6 +155,15 @@ a:hover {
   margin-top: 10px;
 }
 
+.delete-button {
+  background-color: #e69a17e4;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
 .cancel-button {
   background-color: #3d14d2;
   color: white;

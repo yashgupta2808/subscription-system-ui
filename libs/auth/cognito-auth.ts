@@ -108,3 +108,28 @@ export const verifyEmail = (email: string, code: string) => {
     });
   });
 };
+
+export const deleteUser = () => {
+  const user = userPool.getCurrentUser();
+
+  return new Promise((resolve, reject) => {
+    if (!user) {
+      reject("No user session found");
+      return;
+    }
+    user.getSession((err, session) => {
+      if (err || !session) {
+        reject(err || "No user session found");
+        return;
+      }
+
+      user.deleteUser((deleteErr, result) => {
+        if (deleteErr) {
+          reject(deleteErr);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  });
+};

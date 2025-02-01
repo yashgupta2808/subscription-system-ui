@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { getSession, signOut } from "@/libs/auth/cognito-auth";
+import { deleteUser, getSession, signOut } from "@/libs/auth/cognito-auth";
 import { formatDate, SUBSCRIPTION_PLANS } from "@/libs/utils/constants";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -94,6 +94,19 @@ export default function Dashboard() {
 
   const handleSignOut = async () => {
     await signOut();
+    router.push("/");
+  };
+
+  const handleDeleteAccount = async () => {
+    setLoading(true);
+    try {
+      await deleteUser();
+    } catch (error) {
+      setError("An error occurred while deleting account.");
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    } finally {
+      setError("");
+    }
     router.push("/");
   };
 
@@ -230,6 +243,9 @@ export default function Dashboard() {
       )}
       <button className="signout-button" onClick={handleSignOut}>
         Sign Out
+      </button>
+      <button className="delete-button" onClick={handleDeleteAccount}>
+        Delete Account
       </button>
     </>
   );
