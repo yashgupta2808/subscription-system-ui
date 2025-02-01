@@ -101,6 +101,17 @@ export default function Dashboard() {
     setLoading(true);
     try {
       await deleteUser();
+      const response = await fetch("/api/subscribe", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: user.email }),
+      });
+      if (!response.ok) {
+        throw new Error("An error occurred while deleting account.");
+      }
+      alert("Account deleted successfully!");
     } catch (error) {
       setError("An error occurred while deleting account.");
       await new Promise((resolve) => setTimeout(resolve, 3000));
